@@ -1,5 +1,6 @@
 pub mod 请求处理 {
     use super::线程池::ThreadPool;
+    use std::io::BufReader;
     use std::path::Path;
     use std::sync::Arc;
     use std::{
@@ -23,9 +24,12 @@ pub mod 请求处理 {
     }
 
     fn handle_connection(mut stream: TcpStream, path: Arc<Path>) {
+        let _ = BufReader::new(&mut stream).lines().next().unwrap().unwrap();
+
         let status_line = "HTTP/1.1 200 OK";
         let contents = fs::read_to_string(path).unwrap();
         let length = contents.len();
+
         let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
 
         stream.write_all(response.as_bytes()).unwrap();

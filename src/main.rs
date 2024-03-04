@@ -3,8 +3,12 @@ use web_yaml::display;
 use web_yaml::input_guide;
 
 fn main() {
-    let v = file_manage::按后缀搜索文件并按修改日期倒叙排序(".yaml");
     loop {
+        let v = file_manage::按后缀搜索文件并按修改日期倒叙排序(".yaml");
+        if let None = v {
+            continue;
+        }
+        let v = v.unwrap();
         display::展示文件及修改时间(&v);
         let f = input_guide::选择文件(&v);
         match f {
