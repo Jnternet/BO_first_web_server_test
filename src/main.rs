@@ -5,7 +5,7 @@ use web_yaml::input_guide;
 fn main() {
     loop {
         let v = file_manage::按后缀搜索文件并按修改日期倒叙排序(".yaml");
-        if let None = v {
+        if v.is_none() {
             continue;
         }
         let v = v.unwrap();
