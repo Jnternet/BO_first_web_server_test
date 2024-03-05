@@ -13,14 +13,14 @@ pub mod 请求处理 {
         let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
         let pool = ThreadPool::new(4);
 
-        for stream in listener.incoming() {
+        let n = 5;
+        for stream in listener.incoming().take(n) {
             let stream = stream.unwrap();
             let p = path.clone();
             pool.execute(move || {
                 handle_connection(stream, p);
             });
         }
-        println!("关闭服务中...");
     }
 
     fn handle_connection(mut stream: TcpStream, path: Arc<Path>) {
@@ -75,6 +75,8 @@ mod 线程池 {
 
     impl Drop for ThreadPool {
         fn drop(&mut self) {
+            println!("关闭服务中...");
+
             drop(self.sender.take());
 
             for worker in &mut self.workers {
@@ -84,6 +86,7 @@ mod 线程池 {
                     thread.join().unwrap();
                 }
             }
+            println!("服务器已关闭!");
         }
     }
 
