@@ -18,7 +18,9 @@ pub fn 展示文件及修改时间(v: &[(DirEntry, SystemTime)]) {
         )
     });
 }
+
 use std::io::BufRead;
+use crate::data_manage::config::Config;
 
 pub fn 选择文件(v: &[(DirEntry, SystemTime)]) -> DirEntry {
     println!("编号为0的是正确文件吗(回车/编号)");
@@ -45,4 +47,15 @@ pub fn 选择文件(v: &[(DirEntry, SystemTime)]) -> DirEntry {
     }
     println!("最终确定的文件{}", v[num].0.file_name().to_str().unwrap());
     v[num].0.clone()
+}
+
+pub fn 启动服务器前展示配置(config: &Config) {
+    println!("正在启动web server 端口: {}", config.proxy());
+    match config.times() {
+        None => { println!("不设服务次数上限"); }
+        Some(times) => { println!("服务{times}次"); }
+    }
+    if config.ip().is_ipv4() {
+        println!("http://{}:{}", config.ip(), config.proxy());
+    } else { println!("http://[{}]:{}", config.ip(), config.proxy()) }
 }

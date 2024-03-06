@@ -8,19 +8,47 @@ pub mod 请求处理 {
         io::prelude::*,
         net::{TcpListener, TcpStream},
     };
+    use crate::data_manage::config::Config;
+    use crate::pause;
 
-    pub fn 监听端口等待并处理任务(path: Arc<Path>) {
-        let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
+    pub fn 监听端口等待并处理任务(path: Arc<Path>, config: &Config) {
+        let addr = format!("{}:{}", config.ip(), config.proxy());
+        let listener = loop {
+            let listener = TcpListener::bind(&addr);
+            let listener = match listener {
+                Ok(lis) => { lis }
+                Err(e) => {
+                    eprintln!("未能成功绑定: {e}");
+                    eprintln!("请保证错误排除后重试");
+                    pause();
+                    continue;
+                }
+            };
+            break listener;
+        };
+        eprintln!("启动成功");
         let pool = ThreadPool::new(4);
 
-        let n = 5;
-        for stream in listener.incoming().take(n) {
-            let stream = stream.unwrap();
-            let p = path.clone();
-            pool.execute(move || {
-                handle_connection(stream, p);
-            });
-        }
+        match config.times() {
+            None => {
+                for stream in listener.incoming() {
+                    let stream = stream.unwrap();
+                    let p = path.clone();
+                    pool.execute(move || {
+                        handle_connection(stream, p);
+                    });
+                }
+            }
+            Some(n) => {
+                for stream in listener.incoming().take(n) {
+                    let stream = stream.unwrap();
+                    let p = path.clone();
+                    pool.execute(move || {
+                        handle_connection(stream, p);
+                    });
+                }
+            }
+        };
     }
 
     fn handle_connection(mut stream: TcpStream, path: Arc<Path>) {
@@ -64,8 +92,8 @@ mod 线程池 {
         }
 
         pub fn execute<F>(&self, f: F)
-        where
-            F: FnOnce() + Send + 'static,
+            where
+                F: FnOnce() + Send + 'static,
         {
             let job = Box::new(f);
 
@@ -75,18 +103,18 @@ mod 线程池 {
 
     impl Drop for ThreadPool {
         fn drop(&mut self) {
-            println!("关闭服务中...");
+            eprintln!("关闭服务中...");
 
             drop(self.sender.take());
 
             for worker in &mut self.workers {
-                println!("正在关闭{}号线程工人", worker.id);
+                eprintln!("正在关闭{}号线程工人", worker.id);
 
                 if let Some(thread) = worker.thread.take() {
                     thread.join().unwrap();
                 }
             }
-            println!("服务器已关闭!");
+            eprintln!("服务器已关闭!");
         }
     }
 
@@ -102,11 +130,11 @@ mod 线程池 {
 
                 match message {
                     Ok(job) => {
-                        println!("线程工人 {id} 得到任务, 执行中...");
+                        eprintln!("线程工人 {id} 得到任务, 执行中...");
                         job();
                     }
                     Err(e) => {
-                        println!("线程工人 {id} 失联; 原因: {e}");
+                        eprintln!("线程工人 {id} 失联; 原因: {e}");
                         break;
                     }
                 }
