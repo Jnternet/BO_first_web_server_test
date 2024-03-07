@@ -16,7 +16,7 @@ pub fn 初始化配置文件() {
     }
     let mut f = f.unwrap();
     let config = Config::default();
-    let result = serde_json::to_writer(&mut f, &config);
+    let result = serde_json::to_writer_pretty(&mut f, &config);
     if result.is_err() {
         eprintln!("初始化失败，退出程序");
         pause();
@@ -24,20 +24,20 @@ pub fn 初始化配置文件() {
     }
     eprintln!("初始化成功！");
 }
-pub fn 将配置文件读取到结构体中() -> Result<Config, Box<ReadError>> {
+pub fn 将配置文件读取到结构体中() -> Result<Config, ReadError> {
     let f = fs::OpenOptions::new()
         .read(true)
         .open("./config.json");
 
     let f = match f {
         Ok(f) => {f}
-        Err(e) => {return Err(Box::new(ReadError::IoE(e)))}
+        Err(e) => {return Err(ReadError::IoE(e))}
     };
     let config:serde_json::Result<Config> =  serde_json::from_reader(f);
     match config {
         Ok(v) => {Ok(v)}
         Err(e) => {
-            Err(Box::new(ReadError::SerdeJsonE(e)))
+            Err(ReadError::SerdeJsonE(e))
         }
     }
 }

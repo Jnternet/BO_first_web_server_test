@@ -5,7 +5,8 @@ fn main() {
     let config = match config::将配置文件读取到结构体中() {
         Ok(v) => { v }
         Err(e) => {
-            eprintln!("未能成功读取配置文件，初始化为默认状态, 原因: {e}");
+            eprintln!("未能成功读取配置文件, 原因: {e}");
+            eprintln!("正在初始化为默认状态");
             config::初始化配置文件();
             config::将配置文件读取到结构体中().unwrap()
         }
