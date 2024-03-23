@@ -1,5 +1,7 @@
 pub mod 请求处理 {
     use super::线程池::ThreadPool;
+    use crate::data_manage::config::Config;
+    use crate::pause;
     use std::io::BufReader;
     use std::path::Path;
     use std::sync::Arc;
@@ -8,15 +10,13 @@ pub mod 请求处理 {
         io::prelude::*,
         net::{TcpListener, TcpStream},
     };
-    use crate::data_manage::config::Config;
-    use crate::pause;
 
     pub fn 监听端口等待并处理任务(path: Arc<Path>, config: &Config) {
         let addr = format!("{}:{}", config.ip(), config.proxy());
         let listener = loop {
             let listener = TcpListener::bind(&addr);
             let listener = match listener {
-                Ok(lis) => { lis }
+                Ok(lis) => lis,
                 Err(e) => {
                     eprintln!("未能成功绑定: {e}");
                     eprintln!("请保证错误排除后重试");
@@ -92,8 +92,8 @@ mod 线程池 {
         }
 
         pub fn execute<F>(&self, f: F)
-            where
-                F: FnOnce() + Send + 'static,
+        where
+            F: FnOnce() + Send + 'static,
         {
             let job = Box::new(f);
 

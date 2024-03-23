@@ -1,7 +1,7 @@
 use std::time::SystemTime;
 use walkdir::{DirEntry, WalkDir};
 
-pub fn 按后缀搜索文件并按修改日期倒叙排序(
+pub async fn 按后缀搜索文件并按修改日期倒叙排序(
     suffix: &str,
 ) -> Option<Vec<(DirEntry, SystemTime)>> {
     let v = WalkDir::new("./")

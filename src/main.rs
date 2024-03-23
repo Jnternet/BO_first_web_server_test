@@ -1,18 +1,19 @@
 use web_yaml::data_manage::*;
 use web_yaml::{pause, view};
 
-fn main() {
-    let config = match config::将配置文件读取到结构体中() {
-        Ok(v) => { v }
+#[tokio::main]
+async fn main() {
+    let config = match config::将配置文件读取到结构体中().await {
+        Ok(v) => v,
         Err(e) => {
             eprintln!("未能成功读取配置文件, 原因: {e}");
             eprintln!("正在初始化为默认状态");
-            config::初始化配置文件();
-            config::将配置文件读取到结构体中().unwrap()
+            config::初始化配置文件().await;
+            config::将配置文件读取到结构体中().await.unwrap()
         }
     };
     loop {
-        let v = file_manage::按后缀搜索文件并按修改日期倒叙排序(&config.suffix());
+        let v = file_manage::按后缀搜索文件并按修改日期倒叙排序(config.suffix()).await;
         if v.is_none() {
             println!("无文件，请将文件放入当前文件夹或其子文件夹下再重试");
             pause();
