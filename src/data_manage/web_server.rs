@@ -2,11 +2,12 @@ pub mod 请求处理 {
     use super::线程池::ThreadPool;
     use crate::data_manage::config::Config;
     use crate::pause;
-    use std::io::BufReader;
+    // use std::io::BufReader;
+    use std::fs::File;
     use std::path::Path;
     use std::sync::Arc;
     use std::{
-        fs,
+        // fs,
         io::prelude::*,
         net::{TcpListener, TcpStream},
     };
@@ -52,15 +53,19 @@ pub mod 请求处理 {
     }
 
     fn handle_connection(mut stream: TcpStream, path: Arc<Path>) {
-        let _ = BufReader::new(&mut stream).lines().next().unwrap().unwrap();
+        // let _ = BufReader::new(&mut stream).lines().next().unwrap().unwrap();
 
-        let status_line = "HTTP/1.1 200 OK";
-        let contents = fs::read_to_string(path).unwrap();
-        let length = contents.len();
+        // let status_line = "HTTP/1.1 200 OK";
+        // let contents = fs::read_to_string(path).unwrap();
+        // let music = BufReader::new(File::open("2.wav").unwrap());
+        let mut buf = Vec::new();
+        let a = File::open(path).unwrap().read_to_end(&mut buf).unwrap();
+        println!("len = {a}");
+        // let length = music.capacity();
 
-        let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
+        // let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{}");
 
-        stream.write_all(response.as_bytes()).unwrap();
+        stream.write_all(&buf).unwrap();
     }
 }
 
