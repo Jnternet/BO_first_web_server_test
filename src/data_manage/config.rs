@@ -112,7 +112,7 @@ impl Default for Config {
             ip: IpAddr::from([127, 0, 0, 1]),
             proxy: Proxy(7878),
             times: None,
-            suffix: ".yaml".into(),
+            suffix: ".wav".into(),
         }
     }
 }
